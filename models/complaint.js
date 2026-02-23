@@ -1,6 +1,17 @@
 const mongoose = require("mongoose");
 
 const complaintSchema = new mongoose.Schema({
+
+  username: {
+    type: String,
+    required: true
+  },
+
+  phone: {
+    type: String,
+    required: true
+  },
+
   crimeType: {
     type: String,
     required: true
@@ -17,8 +28,20 @@ const complaintSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
-  reportedBy: {
-    type: String
+  
+  evidence: {
+    images: {
+      type: [String], // Array of image URLs
+      default: []
+    },
+    videos: {
+      type: [String], // Array of video URLs
+      default: []
+    },
+    documents: {
+      type: [String], // Array of document URLs
+      default: []
+    }
   }
 });
 

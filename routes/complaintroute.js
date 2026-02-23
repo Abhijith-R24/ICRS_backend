@@ -5,13 +5,14 @@ const Complaint = require("../models/complaint");
 // Create a new complaint
 router.post("/", async (req, res) => {
   try {
-    const { crimeType, description, location, repoertedB } = req.body;
+    const { crimeType, description, location, repoertedBy} = req.body;
 
     const complaint = new Complaint({
       crimeType,
       description,
       location,
-      repoertedB,
+      repoertedBy,
+      status: "Active",
     });
     await complaint.save();
     res
@@ -34,6 +35,17 @@ router.get("/", async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to fetch complaints", error: error.message });
+  }
+});
+
+router.get("/active", async (req, res) => {
+  try {
+    const activeComplaints = await Complaint.find({ status: "Active" });
+    res.status(200).json(activeComplaints);
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to fetch active complaints", error: error.message });
   }
 });
 
