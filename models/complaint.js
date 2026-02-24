@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const complaintSchema = new mongoose.Schema({
 
-  username: {
+  reportedBy: {
     type: String,
     required: true
   },

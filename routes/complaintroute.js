@@ -2,16 +2,21 @@ const express = require("express");
 const router = express.Router();
 const Complaint = require("../models/complaint");
 
+
+
 // Create a new complaint
 router.post("/", async (req, res) => {
   try {
-    const { crimeType, description, location, repoertedBy} = req.body;
+    const { crimeType, description, location, reportedBy, phone, evidence, date } = req.body;
 
     const complaint = new Complaint({
       crimeType,
       description,
       location,
-      repoertedBy,
+      reportedBy,
+      phone,
+      evidence,
+      date,
       status: "Active",
     });
     await complaint.save();
@@ -48,5 +53,6 @@ router.get("/active", async (req, res) => {
       .json({ message: "Failed to fetch active complaints", error: error.message });
   }
 });
+
 
 module.exports = router;
