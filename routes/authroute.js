@@ -19,7 +19,6 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "User already exists" });
     }
 
-
     // Create new user
     const user = new User({
       username,
@@ -64,8 +63,9 @@ router.post("/login", async (req, res) => {
     res.json({
       message: "Login successful",
       userId: user._id,
-        username: user.username,
+      username: user.username,
       email: user.email,
+      isAdmin: user.isAdmin,
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

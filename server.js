@@ -23,8 +23,14 @@ app.use("/api/auth", authRoutes);
 // 🔹 Import complaintRoutes
 const complaintRoutes = require("./routes/complaintroute");
 
+// 🔹 Import adminRoutes
+const adminRoutes = require("./routes/adminroute");
+
 // 🔹 Use complaintRoutes
 app.use("/api/complaints", complaintRoutes);
+
+// 🔹 use  adminRoutes
+app.use("/api/admin", adminRoutes);
 
 // Test Route
 app.get("/", (req, res) => {

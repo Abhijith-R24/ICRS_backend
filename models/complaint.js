@@ -7,6 +7,11 @@ const complaintSchema = new mongoose.Schema({
     required: true
   },
 
+  email: {
+    type: String,
+    required: true
+  },
+
   phone: {
     type: String,
     required: true
@@ -27,6 +32,12 @@ const complaintSchema = new mongoose.Schema({
   date: {
     type: Date,
     default: Date.now
+  },
+
+  status: {
+    type: String,
+    enum: ["Active", "Review", "Resolved"],
+    default: "Active"
   },
   
   evidence: {
