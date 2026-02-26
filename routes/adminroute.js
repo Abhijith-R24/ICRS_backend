@@ -77,7 +77,7 @@ router.put("/complaint/:id/status", async (req, res) => {
         `,
       });
 
-      console.log("Acknowledgement email sent to user");
+
 
     //   complaintToUpdate.acknowledgementSent = true;
     // }
