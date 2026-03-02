@@ -55,7 +55,27 @@ router.get("/active", async (req, res) => {
   }
 });
 
-
+router.put("/:id/status", async (req, res) => {
+  try {
+    const { id } = req.params;  
+    const { status } = req.body;
+    const complaintToUpdate = await Complaint.findById(id);
+    if (!complaintToUpdate) {
+      return res.status(404).json({ message: "Complaint not found" });
+    }
+    complaintToUpdate.status = status;
+    await complaintToUpdate.save();
+    res.status(200).json({
+      message: "Complaint status updated successfully",
+      complaint: complaintToUpdate,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to update complaint status",
+      error: error.message,
+    });
+  }
+});
 
 
 

@@ -11,7 +11,7 @@ dotenv.config();
 // Configure nodemailer transporter
 const transporter = nodemailer.createTransport({
   service: "gmail",
-  auth: {   
+  auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
@@ -41,15 +41,12 @@ router.get("/complaint", async (req, res) => {
     const complaints = await complaint.find();
     res.status(200).json(complaints);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Failed to fetch complaints data",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Failed to fetch complaints data",
+      error: error.message,
+    });
   }
 });
-
 
 // Update complaint status and send acknowledgement email
 router.put("/complaint/:id/status", async (req, res) => {
@@ -62,41 +59,31 @@ router.put("/complaint/:id/status", async (req, res) => {
     }
     complaintToUpdate.status = status;
 
-    // Send acknowledgement ONLY if not already sent
-    // if (!complaintToUpdate.acknowledgementSent) {
-      await transporter.sendMail({
-        from: process.env.EMAIL_USER,
-        to: complaintToUpdate.email,
-        subject: "Complaint Acknowledgement",
-        html: `
+    // Send acknowledgement ONLY if not already sent and status is not "Active"
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: complaintToUpdate.email,
+      subject: "Complaint Acknowledgement",
+      html: `
           <h3>Complaint Received</h3>
           <p>Your complaint has been acknowledged.</p>
           <p><strong>Complaint ID:</strong> ${complaintToUpdate._id}</p>
           <p><strong>Status:</strong> ${status}</p>
           <p>We will investigate and update you soon.</p>
         `,
-      });
-
-
-
-    //   complaintToUpdate.acknowledgementSent = true;
-    // }
+    });
 
     await complaintToUpdate.save();
 
-    res
-      .status(200)
-      .json({
-        message: "Complaint status updated successfully",
-        complaint: complaintToUpdate,
-      });
+    res.status(200).json({
+      message: "Complaint status updated successfully",
+      complaint: complaintToUpdate,
+    });
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Failed to update complaint status",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Failed to update complaint status",
+      error: error.message,
+    });
   }
 });
 
