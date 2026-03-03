@@ -7,7 +7,7 @@ const Complaint = require("../models/complaint");
 // Create a new complaint
 router.post("/", async (req, res) => {
   try {
-    const { crimeType, description, location, reportedBy, phone, email, evidence, date } = req.body;
+    const { crimeType, description, location, reportedBy, phone, email, evidence, date, isEmergency } = req.body;
 
     const complaint = new Complaint({
       crimeType,
@@ -19,6 +19,7 @@ router.post("/", async (req, res) => {
       evidence,
       date,
       status: "Active",
+      isEmergency: isEmergency || false
     });
     await complaint.save();
     res

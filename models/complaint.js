@@ -39,6 +39,11 @@ const complaintSchema = new mongoose.Schema({
     enum: ["Active","Approved", "Rejected", "Review", "Resolved"],
     default: "Active"
   },
+
+  isEmergency: {
+    type: Boolean,
+    default: false
+  },
   
   evidence: {
     images: {

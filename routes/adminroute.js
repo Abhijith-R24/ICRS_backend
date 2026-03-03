@@ -51,7 +51,7 @@ router.post("/login", async (req, res) => {
 // admin gets all complaints
 router.get("/complaint", async (req, res) => {
   try {
-    const complaints = await complaint.find();
+    const complaints = await complaint.find().sort({ isEmergency: -1, date: -1 });
     res.status(200).json(complaints);
   } catch (error) {
     res.status(500).json({
@@ -108,6 +108,31 @@ router.put("/complaint/:id/status", async (req, res) => {
   } catch (error) {
     res.status(500).json({
       message: "Failed to update complaint status",
+      error: error.message,
+    });
+  }
+});
+
+router.put("/complaint/:id/emergency", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { isEmergency } = req.body;
+
+    const complaintToUpdate = await complaint.findByIdAndUpdate(
+      id,
+      { isEmergency },
+      { new: true }
+    );
+    if (!complaintToUpdate) {
+      return res.status(404).json({ message: "Complaint not found" });
+    } 
+    res.status(200).json({  
+      message: "Complaint emergency status updated successfully",
+      complaint: complaintToUpdate,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to update complaint emergency status", 
       error: error.message,
     });
   }
