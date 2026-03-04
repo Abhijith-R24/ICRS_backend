@@ -7,9 +7,10 @@ const Complaint = require("../models/complaint");
 // Create a new complaint
 router.post("/", async (req, res) => {
   try {
-    const { crimeType, description, location, reportedBy, phone, email, evidence, date, isEmergency } = req.body;
+    const { userId,crimeType, description, location, reportedBy, phone, email, evidence, date, isEmergency } = req.body;
 
     const complaint = new Complaint({
+      userId,
       crimeType,
       description,
       location,
@@ -29,6 +30,20 @@ router.post("/", async (req, res) => {
     res
       .status(500)
       .json({ message: "Failed to register complaint", error: error.message });
+  }
+});
+
+// Add this BEFORE the /:id routes to avoid conflicts
+router.get("/my/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const complaints = await Complaint.find({ userId }).sort({ isEmergency: -1, date: -1 });
+    res.status(200).json(complaints);
+  } catch (error) {
+    res.status(500).json({
+      message: "Failed to fetch user complaints",
+      error: error.message,
+    });
   }
 });
 

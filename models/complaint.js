@@ -2,6 +2,12 @@ const mongoose = require("mongoose");
 
 const complaintSchema = new mongoose.Schema({
 
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,  // ✅ matches _id in User schema
+    ref: "User",                            // ✅ links to User model
+    required: true
+  },
+
   reportedBy: {
     type: String,
     required: true
@@ -21,14 +27,17 @@ const complaintSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+
   description: {
     type: String,
     required: true
   },
+
   location: {
     type: String,
     required: true
   },
+
   date: {
     type: Date,
     default: Date.now
@@ -36,7 +45,7 @@ const complaintSchema = new mongoose.Schema({
 
   status: {
     type: String,
-    enum: ["Active","Approved", "Rejected", "Review", "Resolved"],
+    enum: ["Active", "Approved", "Rejected", "Review", "Resolved"],
     default: "Active"
   },
 
@@ -44,20 +53,11 @@ const complaintSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  
+
   evidence: {
-    images: {
-      type: [String], // Array of image URLs
-      default: []
-    },
-    videos: {
-      type: [String], // Array of video URLs
-      default: []
-    },
-    documents: {
-      type: [String], // Array of document URLs
-      default: []
-    }
+    images: { type: [String], default: [] },
+    videos: { type: [String], default: [] },
+    documents: { type: [String], default: [] }
   }
 });
 
