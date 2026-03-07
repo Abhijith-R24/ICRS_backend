@@ -10,6 +10,14 @@ router.post("/", async (req, res) => {
     console.log("BODY RECEIVED:", req.body); // ✅ add this
     const { userId,crimeType, description, location, reportedBy, phone, email, evidence, date, isEmergency } = req.body;
 
+    // ✅ Add this check
+    const mongoose = require("mongoose");
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid userId format" });
+    }
+
+    console.log("userId is valid:", userId);
+
     const complaint = new Complaint({
       userId,
       crimeType,
