@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Complaint = require("../models/complaint");
+const mongoose = require("mongoose");
 
 
 
@@ -11,7 +12,6 @@ router.post("/", async (req, res) => {
     const { userId,crimeType, description, location, reportedBy, phone, email, evidence, date, isEmergency } = req.body;
 
     // ✅ Add this check
-    const mongoose = require("mongoose");
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid userId format" });
     }
@@ -46,6 +46,12 @@ router.post("/", async (req, res) => {
 router.get("/my/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
+    // const complaints = await Complaint.find({ userId }).sort({ isEmergency: -1, date: -1 });
+    // res.status(200).json(complaints);
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(400).json({ message: "Invalid userId format" });
+    }
+
     const complaints = await Complaint.find({ userId }).sort({ isEmergency: -1, date: -1 });
     res.status(200).json(complaints);
   } catch (error) {
