@@ -62,6 +62,8 @@ router.put("/complaint/:id/status", async (req, res) => {
     }
     complaintToUpdate.status = status;
 
+    console.log("checking email sending")
+
 
   await resend.emails.send({
   from: 'onboarding@resend.dev', // use this for testing, your domain for prod
@@ -77,6 +79,8 @@ router.put("/complaint/:id/status", async (req, res) => {
 });
 
     await complaintToUpdate.save();
+
+    console.log("emial sent")
 
     res.status(200).json({
       message: "Complaint status updated successfully",

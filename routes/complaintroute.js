@@ -12,7 +12,13 @@ cloudinary.config({
 });
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 50 * 1024 * 1024,  // 50MB per file
+    files: 8,                     // max total files
+  },
+});
 
 // // ✅ Upload image to Cloudinary
 // router.post("/upload/image", uploadImage.single("file"), (req, res) => {
@@ -95,8 +101,33 @@ async (req, res) => {
       return res.status(400).json({ message: "Invalid userId format" });
     }
 
-    const imageUrls = req.files?.images? await Promise.all(req.files.images.map((file) => uploadToCloudinary(file.buffer, "complaints/images", "image"))): [];
-    const videoUrls = req.files?.videos? await Promise.all(req.files.videos.map((file) => uploadToCloudinary(file.buffer, "complaints/videos", "video"))): [];
+    // Replace your current imageUrls / videoUrls lines with this:
+
+const imageUrls = req.files?.images
+  ? await Promise.all(
+      req.files.images.map((file, i) => {
+        console.log(`Uploading image ${i}: ${file.originalname}, size: ${file.size}`);
+        return uploadToCloudinary(file.buffer, "complaints/images", "image")
+          .catch(err => {
+            console.error(`Image ${i} failed:`, err.message);
+            throw err; // re-throw so you see which one failed
+          });
+      })
+    )
+  : [];
+
+const videoUrls = req.files?.videos
+  ? await Promise.all(
+      req.files.videos.map((file, i) => {
+        console.log(`Uploading video ${i}: ${file.originalname}, size: ${file.size}`);
+        return uploadToCloudinary(file.buffer, "complaints/videos", "video")
+          .catch(err => {
+            console.error(`Video ${i} failed:`, err.message);
+            throw err;
+          });
+      })
+    )
+  : [];
 
     const complaint = new Complaint({
       userId,
