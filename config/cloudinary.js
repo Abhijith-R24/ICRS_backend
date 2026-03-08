@@ -27,18 +27,18 @@ const videoStorage = new CloudinaryStorage({
   },
 });
 
-// ✅ Storage for documents
-const documentStorage = new CloudinaryStorage({
-  cloudinary,
-  params: {
-    folder: "complaints/documents",
-    resource_type: "raw",
-    allowed_formats: ["pdf", "doc", "docx"],
-  },
-});
+// // ✅ Storage for documents
+// const documentStorage = new CloudinaryStorage({
+//   cloudinary,
+//   params: {
+//     folder: "complaints/documents",
+//     resource_type: "raw",
+//     allowed_formats: ["pdf", "doc", "docx"],
+//   },
+// });
 
 const uploadImage = multer({ storage: imageStorage });
 const uploadVideo = multer({ storage: videoStorage });
-const uploadDocument = multer({ storage: documentStorage });
+// const uploadDocument = multer({ storage: documentStorage });
 
-module.exports = { uploadImage, uploadVideo, uploadDocument };
+module.exports = { uploadImage, uploadVideo };

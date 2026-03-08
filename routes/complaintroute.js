@@ -2,49 +2,59 @@ const express = require("express");
 const router = express.Router();
 const Complaint = require("../models/complaint");
 const mongoose = require("mongoose");
-const { uploadImage, uploadVideo, uploadDocument } = require("../config/cloudinary");
+const multer = require("multer");
+const cloudinary = require("cloudinary").v2;
 
-// ✅ Upload image to Cloudinary
-router.post("/upload/image", uploadImage.single("file"), (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-    res.status(200).json({ url: req.file.path });
-  } catch (error) {
-    console.log("Image upload error:", JSON.stringify(error, null, 2)); // ✅ stringify
-    console.log("Image upload error:", error); // ✅ add this
-    res.status(500).json({ message: "Image upload failed", error: error.message });
-  }
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// ✅ Upload video to Cloudinary
-router.post("/upload/video", uploadVideo.single("file"), (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-    res.status(200).json({ url: req.file.path });
-  } catch (error) {
-    console.log("Image upload error:", JSON.stringify(error, null, 2)); // ✅ stringify
-    console.log("Video upload error:", error);
-    res.status(500).json({ message: "Video upload failed", error: error.message });
-  }
-});
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 
-// ✅ Upload document to Cloudinary
-router.post("/upload/document", uploadDocument.single("file"), (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ message: "No file uploaded" });
-    }
-    res.status(200).json({ url: req.file.path });
-  } catch (error) {
-    console.log("Image upload error:", JSON.stringify(error, null, 2)); // ✅ stringify
-    console.log("Document upload error:", error);
-    res.status(500).json({ message: "Document upload failed", error: error.message });
-  }
-});
+// // ✅ Upload image to Cloudinary
+// router.post("/upload/image", uploadImage.single("file"), (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ message: "No file uploaded" });
+//     }
+//     res.status(200).json({ url: req.file.path });
+//   } catch (error) {
+//     console.log("Image upload error:", JSON.stringify(error, null, 2)); // ✅ stringify
+//     console.log("Image upload error:", error); // ✅ add this
+//     res.status(500).json({ message: "Image upload failed", error: error.message });
+//   }
+// });
+
+// // ✅ Upload video to Cloudinary
+// router.post("/upload/video", uploadVideo.single("file"), (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ message: "No file uploaded" });
+//     }
+//     res.status(200).json({ url: req.file.path });
+//   } catch (error) {
+//     console.log("Image upload error:", JSON.stringify(error, null, 2)); // ✅ stringify
+//     console.log("Video upload error:", error);
+//     res.status(500).json({ message: "Video upload failed", error: error.message });
+//   }
+// });
+
+// // ✅ Upload document to Cloudinary
+// router.post("/upload/document", uploadDocument.single("file"), (req, res) => {
+//   try {
+//     if (!req.file) {
+//       return res.status(400).json({ message: "No file uploaded" });
+//     }
+//     res.status(200).json({ url: req.file.path });
+//   } catch (error) {
+//     console.log("Image upload error:", JSON.stringify(error, null, 2)); // ✅ stringify
+//     console.log("Document upload error:", error);
+//     res.status(500).json({ message: "Document upload failed", error: error.message });
+//   }
+// });
 
 // ✅ Add this after your upload routes
 router.use((error, req, res, next) => {
@@ -53,18 +63,40 @@ router.use((error, req, res, next) => {
   res.status(500).json({ message: error.message });
 });
 
+const uploadToCloudinary = (buffer, folder, resource_type = "image") => {
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder, resource_type },
+      (error, result) => {
+        if (error) {
+          reject(error);
+        } else {
+          resolve(result.secure_url);
+        }
+      }
+    );
+    uploadStream.end(buffer);
+  });
+};
+
 // Create a new complaint
-router.post("/", async (req, res) => {
+router.post("/", upload.fields([
+  { name: "images", maxCount: 5 },
+  { name: "videos", maxCount: 3 },
+]), 
+async (req, res) => {
   try {
     console.log("BODY RECEIVED:", req.body); // ✅ add this
-    const { userId,crimeType, description, location, reportedBy, phone, email, evidence, date, isEmergency } = req.body;
+    console.log("FILES RECEIVED:", req.files); // ✅ add this
+    const { userId,crimeType, description, location, reportedBy, phone, email, date, isEmergency } = req.body;
 
     // ✅ Add this check
     if (!mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(400).json({ message: "Invalid userId format" });
     }
 
-    console.log("userId is valid:", userId);
+    const imageUrls = req.files?.images? await Promise.all(req.files.images.map((file) => uploadToCloudinary(file.buffer, "complaints/images", "image"))): [];
+    const videoUrls = req.files?.videos? await Promise.all(req.files.videos.map((file) => uploadToCloudinary(file.buffer, "complaints/videos", "video"))): [];
 
     const complaint = new Complaint({
       userId,
@@ -74,12 +106,17 @@ router.post("/", async (req, res) => {
       reportedBy,
       phone,
       email,
-      evidence,
       date,
       status: "Active",
-      isEmergency: isEmergency || false
+      isEmergency: isEmergency || false,
+      evidence: {
+        images: imageUrls,
+        videos: videoUrls,
+      },
     });
+    console.log("Evidence before save:", complaint.evidence);
     await complaint.save();
+    console.log("Saved complaint evidence:", complaint.evidence.images);
     res
       .status(201)
       .json({ message: "Complaint registered successfully", complaint });

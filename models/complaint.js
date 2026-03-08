@@ -57,7 +57,6 @@ const complaintSchema = new mongoose.Schema({
   evidence: {
     images: { type: [String], default: [] },
     videos: { type: [String], default: [] },
-    documents: { type: [String], default: [] }
   }
 });
 
