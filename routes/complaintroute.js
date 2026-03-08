@@ -2,8 +2,56 @@ const express = require("express");
 const router = express.Router();
 const Complaint = require("../models/complaint");
 const mongoose = require("mongoose");
+const { uploadImage, uploadVideo, uploadDocument } = require("../config/cloudinary");
 
+// ✅ Upload image to Cloudinary
+router.post("/upload/image", uploadImage.single("file"), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    res.status(200).json({ url: req.file.path });
+  } catch (error) {
+    console.log("Image upload error:", JSON.stringify(error, null, 2)); // ✅ stringify
+    console.log("Image upload error:", error); // ✅ add this
+    res.status(500).json({ message: "Image upload failed", error: error.message });
+  }
+});
 
+// ✅ Upload video to Cloudinary
+router.post("/upload/video", uploadVideo.single("file"), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    res.status(200).json({ url: req.file.path });
+  } catch (error) {
+    console.log("Image upload error:", JSON.stringify(error, null, 2)); // ✅ stringify
+    console.log("Video upload error:", error);
+    res.status(500).json({ message: "Video upload failed", error: error.message });
+  }
+});
+
+// ✅ Upload document to Cloudinary
+router.post("/upload/document", uploadDocument.single("file"), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    res.status(200).json({ url: req.file.path });
+  } catch (error) {
+    console.log("Image upload error:", JSON.stringify(error, null, 2)); // ✅ stringify
+    console.log("Document upload error:", error);
+    res.status(500).json({ message: "Document upload failed", error: error.message });
+  }
+});
+
+// ✅ Add this after your upload routes
+router.use((error, req, res, next) => {
+  console.log("Middleware error:", error.message);
+  console.log("Middleware error stack:", error.stack);
+  res.status(500).json({ message: error.message });
+});
 
 // Create a new complaint
 router.post("/", async (req, res) => {
@@ -52,7 +100,7 @@ router.get("/my/:userId", async (req, res) => {
       return res.status(400).json({ message: "Invalid userId format" });
     }
 
-    const complaints = await Complaint.find({ userId }).sort({ isEmergency: -1, date: -1 });
+    const complaints = await Complaint.find({ userId: new mongoose.Types.ObjectId(userId) }).sort({ isEmergency: -1, date: -1 });
     res.status(200).json(complaints);
   } catch (error) {
     res.status(500).json({

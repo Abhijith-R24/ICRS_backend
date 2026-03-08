@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Admin = require("../models/users"); // make sure this exists
 const bcrypt = require("bcryptjs");
-const nodemailer = require("nodemailer");
 const complaint = require("../models/complaint");
 const dotenv = require("dotenv");
 const { Resend } = require("resend");
@@ -20,15 +19,6 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 //   },
 // });
 
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS, // Gmail App Password
-  },
-});
 
 // Admin registration
 router.post("/login", async (req, res) => {
@@ -72,19 +62,6 @@ router.put("/complaint/:id/status", async (req, res) => {
     }
     complaintToUpdate.status = status;
 
-    // Send acknowledgement ONLY if not already sent and status is not "Active"
-    // await transporter.sendMail({
-    //   from: process.env.EMAIL_USER,
-    //   to: complaintToUpdate.email,
-    //   subject: "Complaint Acknowledgement",
-    //   html: `
-    //       <h3>Complaint Received</h3>
-    //       <p>Your complaint has been acknowledged.</p>
-    //       <p><strong>Complaint ID:</strong> ${complaintToUpdate._id}</p>
-    //       <p><strong>Status:</strong> ${status}</p>
-    //       <p>We will investigate and update you soon.</p>
-    //     `,
-    // });
 
   await resend.emails.send({
   from: 'onboarding@resend.dev', // use this for testing, your domain for prod
